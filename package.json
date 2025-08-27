@@ -2,9 +2,9 @@
   "name": "nursecredx-backend",
   "version": "1.0.0",
   "description": "Back-end for NursecredX NFT application",
-  "main": "serverjs",
+  "main": "server.js",
   "scripts": {
-    "start": "node serverjs"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

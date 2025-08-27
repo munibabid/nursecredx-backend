@@ -67,7 +67,7 @@ app.get('/nfts', async (req, res) => {
   }
 });
 
-app.post('/burn', async (req, res) => {
+app.post('/burn', requireApiKey, async (req, res) => {
   const { tokenId } = req.body;
   try {
     const client = await connectClient();
