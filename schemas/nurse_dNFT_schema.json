@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Nurse License Dynamic NFT Metadata",
+  "type": "object",
+  "description": "This schema describes the metadata stored off chain for a nurse license dynamic NFT.  The URI of the NFToken points to a JSON document that conforms to this schema.  Fields allow agencies and verifiers to see licence details without exposing personally identifiable information.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this metadata document, such as a UUID.  This is not the NFTokenID itself but a reference that can be stable across URI updates."
+    },
+    "credential_type": {
+      "type": "string",
+      "description": "Type of credential represented by this NFT, e.g. 'nurse_license', 'acls', 'bls', etc."
+    },
+    "license_number": {
+      "type": "string",
+      "description": "The professional license number issued by the relevant regulatory body."
+    },
+    "state": {
+      "type": "string",
+      "description": "Two letter state or province code where the license is registered (e.g. 'CA', 'NY')."
+    },
+    "issuing_authority": {
+      "type": "string",
+      "description": "Name of the board or authority that issued the license."
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date on which the license was originally issued (ISO 8601)."
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date on which the license expires or must be renewed (ISO 8601)."
+    },
+    "license_status": {
+      "type": "string",
+      "enum": ["active", "expired", "suspended", "revoked", "pending"],
+      "description": "Current status of the license.  The value should be updated whenever the NFT's URI is modified."
+    },
+    "credential_hash": {
+      "type": "string",
+      "description": "A cryptographic hash (e.g. SHA 256) of the underlying Verifiable Credential or license document.  This allows verifiers to confirm that the document they are shown off chain matches what was referenced when the NFT was minted."
+    },
+    "evidence_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to a pin or blob (IPFS, Arweave, HTTPS, etc.) that contains the supporting Verifiable Credential or documentation for the license."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recent update to this metadata document (ISO 8601 with time)."
+    },
+    "revocation_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URI pointing to a revocation list or feed where updates about credential revocation are published."
+    }
+  },
+  "required": [
+    "id",
+    "credential_type",
+    "license_number",
+    "state",
+    "issuing_authority",
+    "issue_date",
+    "expiration_date",
+    "license_status",
+    "credential_hash",
+    "evidence_uri",
+    "last_updated"
+  ],
+  "additionalProperties": true
+}
