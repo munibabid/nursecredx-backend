@@ -21,7 +21,7 @@ transactions【812198701817682†L259-L297】 and batch processing【80039740311
 
 Before running this script you must:
 
-* Install the xrpl‑py library (`pip install xrpl`).
+    * Install the xrpl‑py library (`pip install xrpl-py`).
 * Set environment variables for ISSUER_SEED, NURSE_SEED and RPC_URL.
 * Ensure the network supports the necessary amendments (DynamicNFT,
   Credentials, DID, Batch, MPTokensV1).
@@ -49,11 +49,13 @@ from xrpl.models.transactions import (
     EscrowCreate,
     Batch,
 )
-from xrpl.transaction import (
-    safe_sign_and_autofill_transaction,
-    send_reliable_submission,
-    safe_sign_transaction
-)
+# The xrpl‑py transaction helpers changed names in version 2.x.  We no
+# longer import them here because this script uses batch submission
+# helpers defined in batch_tx_builder.py.  If you need to sign or
+# submit individual transactions outside of batches, import
+# ``autofill_and_sign`` and ``send_reliable_submission`` from
+# ``xrpl.transaction`` where needed.
+from xrpl.transaction import send_reliable_submission  # for type hints only
 from xrpl.utils import hex_to_bytes, xrp_to_drops
 from xrpl.models.amounts import IssuedCurrencyAmount
 from batch_tx_builder import (
@@ -61,8 +63,32 @@ from batch_tx_builder import (
     build_credential_accept_tx,
     build_nft_mint_tx,
     build_batch_tx,
-    submit_batch,
 )
+# Import the signing and submission helpers directly.  In xrpl‑py 2.x
+# the helper to autofill and sign a transaction is named `autofill_and_sign`.
+# We also import `send_reliable_submission` to submit the signed transaction.
+try:
+    from xrpl.transaction import autofill_and_sign  # xrpl‑py >= 2.0
+except ImportError:
+    # Fallback to pre‑2.x helper name
+    from xrpl.transaction import safe_sign_and_autofill_transaction as autofill_and_sign  # type: ignore
+from xrpl.transaction import send_reliable_submission
+
+# Backwards compatibility helper.  Some scripts still call
+# `safe_sign_and_autofill_transaction`.  Define it as an alias of
+# `autofill_and_sign` so that code written for xrpl‑py 1.x continues to work
+# when using xrpl‑py 2.x.  Use this alias instead of importing the removed
+# helper from xrpl.transaction.
+def safe_sign_and_autofill_transaction(tx, wallet, client):
+    """
+    Backwards compatible wrapper that uses `autofill_and_sign` under the hood.
+
+    :param tx: The transaction to sign and autofill.
+    :param wallet: The wallet used for signing.
+    :param client: An XRPL client instance.
+    :return: The signed and autofilled transaction dictionary.
+    """
+    return autofill_and_sign(tx, wallet, client)
 
 
 def fund_account(address: str, faucet_url: str = "https://faucet.altnet.rippletest.net/accounts") -> Tuple[str, int]:
@@ -156,10 +182,11 @@ def main() -> None:
         fee=str(len(inner_txs) * 10),
     )
 
-    # Submit batch.  Note: This will fail if the network resets are still
-    # processing or amendments are not enabled.  Use simulate API to
-    # preview the result before committing【949306616210145†L167-L176】.
-    response = submit_batch(batch, [issuer_wallet], client)
+    # Sign and submit the batch transaction.  We sign the transaction
+    # with the issuer's wallet; autofill_and_sign will fill in
+    # Sequence and Fee fields.  After signing, we send it to the network.
+    signed_batch = autofill_and_sign(batch, issuer_wallet, client)
+    response = send_reliable_submission(signed_batch, client)
     print(response)
 
 
