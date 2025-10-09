@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install xrpl requests
+          pip install xrpl-py requests
       - name: Run reset replay script
         env:
           ISSUER_SEED: ${{ secrets.ISSUER_SEED }}
